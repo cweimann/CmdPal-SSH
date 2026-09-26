@@ -20,8 +20,12 @@ internal static class TerminalFocus
 	private const int RecheckDelayMs = 170;
 	private const int MaxAttempts = 3;
 
-	/// <summary>All Windows Terminal top-level windows (visible or not) that exist right now.</summary>
-	public static HashSet<nint> Snapshot() => [.. GetTerminalWindows(visibleOnly: false)];
+	/// <summary>
+	/// Windows Terminal top-level windows that are visible right now. A window counts as "new"
+	/// later if it is visible then but wasn't visible here: this covers a brand-new window
+	/// (Default mode) and an already-existing but hidden Quake window that gets shown.
+	/// </summary>
+	public static HashSet<nint> Snapshot() => [.. GetTerminalWindows(visibleOnly: true)];
 
 	/// <summary>Finds and focuses the launched terminal on a background task. Never throws.</summary>
 	public static void FocusInBackground(HashSet<nint> before)
@@ -43,7 +47,7 @@ internal static class TerminalFocus
 
 	private static async Task FocusAsync(HashSet<nint> before)
 	{
-		Log($"snapshot had {before.Count} existing WT window(s)");
+		Log($"snapshot had {before.Count} visible WT window(s); hidden WT windows: {GetTerminalWindows(visibleOnly: false).Count(h => !NativeMethods.IsWindowVisible(h))}");
 		var sw = Stopwatch.StartNew();
 		nint target = 0;
 		while (sw.ElapsedMilliseconds < TimeoutMs)
@@ -53,10 +57,12 @@ internal static class TerminalFocus
 			if (fresh != 0)
 			{
 				target = fresh;
-				Log($"new WT window {Hex(fresh)} found after {sw.ElapsedMilliseconds} ms");
+				Log($"newly visible WT window {Hex(fresh)} found after {sw.ElapsedMilliseconds} ms");
 				break;
 			}
 
+			// New-tab mode (or Quake already showing): no window became visible, so use the
+			// topmost visible WT window, which is the one that just got the new tab.
 			if (sw.ElapsedMilliseconds >= FallbackAfterMs && before.Count > 0 && visible.Count > 0)
 			{
 				target = visible[0];
@@ -69,7 +75,7 @@ internal static class TerminalFocus
 
 		if (target == 0)
 		{
-			Log($"no WT window found within {TimeoutMs} ms; giving up");
+			Log($"no newly visible WT window within {TimeoutMs} ms (and no visible existing one); giving up");
 			return;
 		}
 
