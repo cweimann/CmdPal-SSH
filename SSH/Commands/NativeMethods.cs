@@ -1,4 +1,3 @@
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace SSH.Commands;
@@ -121,7 +120,7 @@ internal static partial class NativeMethods
 		return list;
 	}
 
-	[UnmanagedCallersOnly(CallConvs = [typeof(CallConvStdcall)])]
+	[UnmanagedCallersOnly]
 	private static int EnumWindowsCallback(nint hWnd, nint lParam)
 	{
 		if (GCHandle.FromIntPtr(lParam).Target is List<nint> list)
