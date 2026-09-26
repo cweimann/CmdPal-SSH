@@ -18,7 +18,7 @@ jobs:
       - name: Build x64 MSIX
         working-directory: SSH
         shell: pwsh
-        run: dotnet build --configuration Release -p:Platform=x64 -p:AppxPackageDir="AppPackages\x64\" -p:RuntimeIdentifier=win-x64 -p:SelfContained=true -p:AppxPackageSigningEnabled=false
+        run: dotnet build --configuration Release -p:Platform=x64 -p:AppxPackageDir="AppPackages\x64\" -p:RuntimeIdentifier=win-x64 -p:SelfContained=true -p:PublishSingleFile=false -p:PublishTrimmed=false -p:AppxPackageSigningEnabled=false
 
       - name: List packages
         shell: pwsh
