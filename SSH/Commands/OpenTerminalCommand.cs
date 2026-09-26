@@ -21,6 +21,8 @@ internal sealed partial class OpenTerminalCommand(
 		// terminal we launch can take foreground/keyboard focus.
 		_ = NativeMethods.AllowSetForegroundWindow(NativeMethods.ASFW_ANY);
 		_ = TerminalHelper.OpenTerminal(host, title, mode, type, suppressTitleChange);
-		return CommandResult.Dismiss();
+		// KeepOpen: let the palette hide on its own when the terminal takes focus, avoiding
+		// the Dismiss foreground hand-back racing with the new terminal window.
+		return CommandResult.KeepOpen();
 	}
 }
