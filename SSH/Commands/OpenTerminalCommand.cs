@@ -20,7 +20,16 @@ internal sealed partial class OpenTerminalCommand(
 		// CoAllowSetForegroundWindow) immediately, while they are still valid, so the
 		// terminal we launch can take foreground/keyboard focus.
 		_ = NativeMethods.AllowSetForegroundWindow(NativeMethods.ASFW_ANY);
-		_ = TerminalHelper.OpenTerminal(host, title, mode, type, suppressTitleChange);
+
+		// Windows Terminal doesn't activate its own window, so remember which WT windows
+		// already exist, launch, then find the (new) terminal window and focus it ourselves.
+		var existingWtWindows = type == TerminalType.WindowsTerminal ? TerminalFocus.Snapshot() : null;
+		var launched = TerminalHelper.OpenTerminal(host, title, mode, type, suppressTitleChange);
+		if (launched && existingWtWindows is not null)
+		{
+			TerminalFocus.FocusInBackground(existingWtWindows);
+		}
+
 		return CommandResult.Dismiss();
 	}
 }

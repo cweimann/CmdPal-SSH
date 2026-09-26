@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [dismiss-fix, focus-a, focus-b]
+    branches: [dismiss-fix, focus-a, focus-b, focus-c]
   workflow_dispatch:
 
 jobs:
